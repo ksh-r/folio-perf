@@ -1,0 +1,44 @@
+{
+  "name": "folio-perf",
+  "version": "1.0.0",
+  "description": "",
+  "source": [
+    "src/index.html",
+    "src/cursor_control.html",
+    "src/about.html"
+  ],
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "scripts": {
+    "dev": "parcel",
+    "prebuild": "rm -rf dist",
+    "build": "parcel build --public-url ./ --no-source-maps --compressor @parcel/compressor-brotli",
+    "build-bundle-analyser": "parcel build --public-url ./ --no-source-maps --reporter @parcel/reporter-bundle-analyzer",
+    "build-bundle-buddy": "parcel build --reporter @parcel/reporter-bundle-buddy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ksh-r/folio-perf.git"
+  },
+  "author": "Keshar W",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ksh-r/folio-perf/issues"
+  },
+  "homepage": "https://github.com/ksh-r/folio-perf#readme",
+  "devDependencies": {
+    "@parcel/compressor-brotli": "^2.6.0",
+    "@parcel/compressor-gzip": "^2.6.0",
+    "@parcel/reporter-bundle-analyzer": "^2.6.0",
+    "@parcel/reporter-bundle-buddy": "^2.6.0",
+    "@parcel/transformer-sass": "^2.6.0",
+    "eslint": "^8.17.0",
+    "parcel": "^2.6.0",
+    "parcel-plugin-static-files-copy": "^2.6.0",
+    "parcel-reporter-static-files-copy": "^1.3.4"
+  },
+  "dependencies": {
+    "@barba/core": "^2.9.7",
+    "gsap": "^3.10.4",
+    "three": "^0.141.0"
+  }
+}
