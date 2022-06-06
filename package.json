@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "parcel",
     "prebuild": "rm -rf dist",
-    "build": "parcel build --public-url ./ --no-source-maps --compressor @parcel/compressor-brotli",
+    "build": "parcel build --public-url ./ --no-source-maps",
     "build-bundle-analyser": "parcel build --public-url ./ --no-source-maps --reporter @parcel/reporter-bundle-analyzer",
     "build-bundle-buddy": "parcel build --reporter @parcel/reporter-bundle-buddy"
   },
