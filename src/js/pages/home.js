@@ -1,6 +1,6 @@
 import Cursor from '../cursor';
 
-import { ACESFilmicToneMapping, BloomCompositeMaterial, Color, DirectionalLight, Events, FXAAMaterial, Fog, GLSL3, Group, HemisphereLight, LuminosityMaterial, Mesh, MeshStandardMaterial, NoBlending, OrthographicCamera, PanelItem, PerspectiveCamera, PlaneGeometry, RawShaderMaterial, Reflector, RepeatWrapping, SVGLoader, Scene, Stage, TextureLoader, UI, Uniform, UnrealBloomBlurMaterial, Vector2, Vector3, WebGLRenderTarget, WebGLRenderer, floorPowerOfTwo, getFullscreenTriangle, lerp, ticker } from '../alien';
+import { ACESFilmicToneMapping, BloomCompositeMaterial, Color, DirectionalLight, Events, FXAAMaterial, Fog, GLSL3, Group, HemisphereLight, LuminosityMaterial, Mesh, MeshStandardMaterial, NoBlending, OrthographicCamera, PanelItem, PerspectiveCamera, PlaneGeometry, RawShaderMaterial, Reflector, RepeatWrapping, SVGLoader, Scene, ShaderMaterial, Stage, TextureLoader, UI, Uniform, UnrealBloomBlurMaterial, Vector2, Vector3, VideoTexture, WebGLRenderTarget, WebGLRenderer, floorPowerOfTwo, getFullscreenTriangle, lerp, ticker } from '../alien';
 
 import rgbshift from '../rgbshift.glsl.js';
 
@@ -56,33 +56,46 @@ class Triangle extends Group {
   }
 
   async initMesh() {
-    const { camera, loadSVG } = WorldController;
+    const { camera } = WorldController;
 
-    const data = await loadSVG('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><path stroke-width="0.25" d="M 3 0 L 0 5 H 6 Z"/></svg>');
-    const paths = data.paths;
+    const videoElement = document.getElementById('reel');
+    videoElement.play();
+    const videoTexture = new VideoTexture(videoElement);
 
     const group = new Group();
     group.position.set(0, 1.4, -11);
-    group.scale.y *= -1;
     group.lookAt(camera.position);
 
-    for (let i = 0, l = paths.length; i < l; i++) {
-      const path = paths[i];
+    // const geometry = new PlaneGeometry(8,4.5);
+    // const geometry = new PlaneGeometry(8.8,4.95);
+    const geometry = new PlaneGeometry(9.6,5.4);
+    // const material = new MeshStandardMaterial({ emissive: 0xffffff });
+    const material = new ShaderMaterial({
+      uniforms: {
+        // uColor: { value: new Color(0., 0.8, 0.5)}
+        uTexture: { value: videoTexture }
+      },
+      vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    vec3 pos = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.);
+                }
+            `,
+      fragmentShader: `
+                uniform sampler2D uTexture;
+                varying vec2 vUv;
+                void main() {
+                    vec3 texture = texture2D(uTexture, vUv).rgb;
+                    gl_FragColor = vec4(texture, 1.);
+                }
+            `
+    });
 
-      const material = new MeshStandardMaterial({ emissive: 0xffffff });
-
-      for (let j = 0, jl = path.subPaths.length; j < jl; j++) {
-        const subPath = path.subPaths[j];
-        const geometry = SVGLoader.pointsToStroke(subPath.getPoints(), path.userData.style);
-
-        if (geometry) {
-          geometry.center();
-
-          const mesh = new Mesh(geometry, material);
-          group.add(mesh);
-        }
-      }
-    }
+    geometry.center();
+    const mesh = new Mesh(geometry, material);
+    group.add(mesh);
 
     this.add(group);
   }
@@ -514,34 +527,34 @@ class RenderManager {
     renderer.render(screenScene, screenCamera);
 
     // Extract bright areas
-    this.luminosityMaterial.uniforms.tMap.value = renderTargetB.texture;
-    this.screen.material = this.luminosityMaterial;
-    renderer.setRenderTarget(renderTargetBright);
-    renderer.render(screenScene, screenCamera);
+    // this.luminosityMaterial.uniforms.tMap.value = renderTargetB.texture;
+    // this.screen.material = this.luminosityMaterial;
+    // renderer.setRenderTarget(renderTargetBright);
+    // renderer.render(screenScene, screenCamera);
 
     // Blur all the mips progressively
-    let inputRenderTarget = renderTargetBright;
+    // let inputRenderTarget = renderTargetBright;
 
-    for (let i = 0, l = this.nMips; i < l; i++) {
-      this.screen.material = this.blurMaterials[i];
+    // for (let i = 0, l = this.nMips; i < l; i++) {
+    //   this.screen.material = this.blurMaterials[i];
 
-      this.blurMaterials[i].uniforms.tMap.value = inputRenderTarget.texture;
-      this.blurMaterials[i].uniforms.uDirection.value = BlurDirectionX;
-      renderer.setRenderTarget(renderTargetsHorizontal[i]);
-      renderer.render(screenScene, screenCamera);
+    //   this.blurMaterials[i].uniforms.tMap.value = inputRenderTarget.texture;
+    //   this.blurMaterials[i].uniforms.uDirection.value = BlurDirectionX;
+    //   renderer.setRenderTarget(renderTargetsHorizontal[i]);
+    //   renderer.render(screenScene, screenCamera);
 
-      this.blurMaterials[i].uniforms.tMap.value = this.renderTargetsHorizontal[i].texture;
-      this.blurMaterials[i].uniforms.uDirection.value = BlurDirectionY;
-      renderer.setRenderTarget(renderTargetsVertical[i]);
-      renderer.render(screenScene, screenCamera);
+    //   this.blurMaterials[i].uniforms.tMap.value = this.renderTargetsHorizontal[i].texture;
+    //   this.blurMaterials[i].uniforms.uDirection.value = BlurDirectionY;
+    //   renderer.setRenderTarget(renderTargetsVertical[i]);
+    //   renderer.render(screenScene, screenCamera);
 
-      inputRenderTarget = renderTargetsVertical[i];
-    }
+    //   inputRenderTarget = renderTargetsVertical[i];
+    // }
 
     // Composite all the mips
-    this.screen.material = this.bloomCompositeMaterial;
-    renderer.setRenderTarget(renderTargetsHorizontal[0]);
-    renderer.render(screenScene, screenCamera);
+    // this.screen.material = this.bloomCompositeMaterial;
+    // renderer.setRenderTarget(renderTargetsHorizontal[0]);
+    // renderer.render(screenScene, screenCamera);
 
     // Composite pass (render to screen)
     this.compositeMaterial.uniforms.tScene.value = renderTargetB.texture;
