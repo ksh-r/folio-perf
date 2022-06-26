@@ -40,11 +40,5 @@
     "@barba/core": "^2.9.7",
     "gsap": "^3.10.4",
     "three": "^0.141.0"
-  },
-  "parcel-namer-rewrite": {
-    "rules": {
-      "(.*).css": "app{.hash}.css",
-      "(.*).js": "app{.hash}.js"
-    }
   }
 }
